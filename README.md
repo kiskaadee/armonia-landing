@@ -29,22 +29,29 @@ Guided by **Anne Droid**:
 ## Local Development Quickstart
 
 ### Prerequisites
-- Node.js 20+
-- npm
+- NixOS / Nix Flakes (`direnv` recommended) or Node.js 22+ & `pnpm`
 
-### 1. Setup Environment
+### 1. Enter Nix DevShell & Setup Environment
 ```bash
+direnv allow # or: nix develop
 cp .env.example .env
 ```
 Set `VITE_API_BASE_URL=http://localhost:8000` to connect to `armonia-api`.
 
 ### 2. Install Dependencies
 ```bash
-npm install
+pnpm install
 ```
 
-### 3. Run Dev Server
+### 3. Run Dev Server (`Vite+`)
 ```bash
-npm run dev
+pnpm exec vp dev
 ```
 Open `http://localhost:5173` in your browser.
+
+### 4. Verification Gates
+```bash
+pnpm exec biome check .
+pnpm exec vp check
+pnpm exec vp test
+```

@@ -1,34 +1,40 @@
-# Armonía del Ser: Public Landing & Self-Service UI - Agent Guidelines & Workflow Rules
+# Repository Technical Blueprint: `armonia-landing`
 
-This document specifies mandatory workflows, constraints, and quality gates for AI agents operating in `armonia-landing`.
-
----
-
-## 1. Core Operating Constraints
-
-- **No Direct Commits to `main`**: Agents must never commit directly to `main`. All work must be developed on descriptive feature, bugfix, or chore branches (`feat/*`, `fix/*`, `chore/*`).
-- **No Destructive Git Actions**: Commands such as `git reset --hard`, `git restore <file>`, `git clean -fd`, and force-pushes (`git push --force`) are strictly prohibited without the user's explicit yes.
-- **Secret Redaction**: Never print, commit, or log sensitive tokens or API credentials.
-- **Session Modes**:
-  - `learning`: The user drives and writes the reasoning, the agent asks guiding questions.
-  - `delivery`: The agent may draft code and plans, presenting rationale and trade-offs.
+This file defines the local toolchain, frontend implementation rules, aesthetic boundaries, and self-service reservation flow for `armonia-landing`. For cross-repo Git branching rules, TDD lifecycle, or Gitea (`tea`) issue tracking, consult the workspace root [`../AGENTS.md`](../AGENTS.md).
 
 ---
 
-## 2. Agent Directory & Persona Delegation
+## 1. Local Toolchain & Nix Environment (`flake.nix` + `pnpm` + `Vite+` + `Biome`)
 
-- **Anne Droid** (`profile/agents/anne-droid.md`): Senior Frontend Engineer & UX Specialist.
-  - **Consult when**: Defining visual tone, typography, color palettes, and emotional resonance.
-  - **Delegate when**: Implementing client-facing hero components, booking modals, and responsive flyers on `feat/anne/*` branches.
-  - **Aesthetic Manifesto**: Reflect the peaceful, grounded identity of *Armonía del Ser* (warm earth tones, lavender/sage lotus palette from the flyer, clean serif display typography, natural textures) without falling into generic template patterns.
+This repository is provisioned via a declarative Nix `devShell` (`flake.nix` + `.envrc`) and uses `pnpm`, `Vite+` (`vp`), and `Biome`.
+- **Nix DevShell:** Ensure commands run inside the Nix environment (`direnv` activates automatically on `cd`, or prefix with `nix develop -c <cmd>`).
+- **Package Manager:** Use `pnpm` exclusively (`pnpm install`, `pnpm add`). Never use `npm` or `yarn` (do not generate `package-lock.json` or `yarn.lock`).
+- **Verification Gates (Pre-Commit Checklist):**
+  Before proposing or executing any commit, run and pass all checks with zero warnings or errors:
+  ```bash
+  pnpm exec biome check .
+  pnpm exec vp check
+  pnpm exec vp test
+  ```
 
 ---
 
-## 3. Architecture & Functional Directives
+## 2. Frontend Architecture & Aesthetic Direction
 
-- **Target Persona**: Prospective and recurring clients seeking therapy, meditation, cocoa circles, or retreats.
-- **Self-Service Booking Flow**:
-  1. *Browse Services*: Clear cards displaying modality (presencial/online), schedule, price in MXN, and benefits.
-  2. *Reserve Spot*: Client provides name, phone (WhatsApp), and chooses a slot.
-  3. *Payment Clarity*: Instructions showing SPEI CLABE + unique Folio code (`ADS-XXXX`).
-  4. *One-Tap WhatsApp Handoff*: Client taps button to open WhatsApp chat with Jazmín and send receipt.
+### Anne Droid Delegation (`profile/agents/anne-droid.md`)
+- **Consult when:** Defining visual tone, typography, color palettes, emotional resonance, and mobile booking ergonomics.
+- **Delegate when:** Implementing client-facing hero sections, service catalog cards, booking flows, and frontend tests on `feat/anne/*` branches.
+
+### Aesthetic & UX Invariants
+- **Grounded Holistic Identity:** Reflect the peaceful, warm identity of *Armonía del Ser* (referencing [`../armonia-flyer.jpg`](../armonia-flyer.jpg): warm earth tones, lavender/sage lotus palette, clean serif display typography, and natural textures) without generic SaaS template tropes.
+- **5-State Resilient UI:** Every dynamic catalog and booking component must handle *Empty* (no slots available), *Loading*, *Error* (e.g., `409 Conflict` slot collision), *Partial*, and *Success* states cleanly.
+- **Public Security Boundary:** Consumes only public `armonia-api` endpoints (`GET /services`, `POST /bookings`). Never expose administrative routes or credentials.
+
+---
+
+## 3. Self-Service Client Reservation Flow
+
+1. **Browse Service Catalog:** Clear cards displaying modality (`PRESENCIAL` in Tulancingo vs. `ONLINE`), schedule, duration, price in MXN, and holistic benefits.
+2. **Claim Slot:** Client selects a service and time slot and enters their name and WhatsApp phone number (or redeems an active multi-session package).
+3. **SPEI Payment Instructions:** Displays SPEI bank details, CLABE, and the generated reservation folio (`ADS-XXXX`).
+4. **One-Tap WhatsApp Handoff:** Opens a pre-filled `wa.me` chat with Jasmin/assistant so the client can send their transfer receipt immediately.
